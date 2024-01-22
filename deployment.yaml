@@ -6,48 +6,23 @@ metadata:
   labels:
     app: demo
 spec:
-    strategy:
-      canary:
-        steps:
-        - setWeight: 20
-        - pause:
-            duration: "1m"
-        - setWeight: 50
-        - pause:
-            duration: "2m"
-        canaryService: demo-canary
-        stableService: demo
-        trafficRouting:
-          istio:
-            virtualService: 
-              name: istio-vs
-              routes:
-              - primary 
-
-  # strategy:
-  #   canary:
-  #     analysis:
-  #       templates:
-  #       - templateName: success-rate
-  #       startingStep: 2
-  #       args:
-  #       - name: service-name
-  #         value: demo-canary.default.svc.cluster.local
-  #     steps:
-  #     - setWeight: 20
-  #     - pause:
-  #         duration: "1m"
-  #     - setWeight: 50
-  #     - pause:
-  #         duration: "2m"
-  #     canaryService: demo-canary
-  #     stableService: demo
-  #     trafficRouting:
-  #       istio:
-  #          virtualService: 
-  #           name: istio-vs
-  #           routes:
-  #           - primary # At least one route is required
+  strategy:
+    canary:
+      steps:
+      - setWeight: 20
+      - pause:
+          duration: "1m"
+      - setWeight: 50
+      - pause:
+          duration: "2m"
+      canaryService: demo-canary
+      stableService: demo
+      trafficRouting:
+        istio:
+           virtualService: 
+            name: istio-vs
+            routes:
+            - primary 
   replicas: 4
   revisionHistoryLimit: 2
   selector:
@@ -98,26 +73,3 @@ spec:
   selector:
     app: demo
   type: ClusterIP
-# ---
-# apiVersion: argoproj.io/v1alpha1
-# kind: AnalysisTemplate
-# metadata:
-#   name: success-rate
-# spec:
-#   args:
-#   - name: service-name
-#   metrics:
-#   - name: success-rate
-#     successCondition: result[0] >= 0.95
-#     interval: 30s
-#     failureLimit: 1
-#     provider:
-#       prometheus:
-#         address: http://prometheus.istio-system.svc.cluster.local:9090
-#         query: |
-#           sum(irate(
-#             istio_requests_total{reporter="source",destination_service=~"{{args.service-name}}",response_code!~"5.*"}[1m]
-#           )) / 
-#           sum(irate(
-#             istio_requests_total{reporter="source",destination_service=~"{{args.service-name}}"}[1m]
-#           ))
